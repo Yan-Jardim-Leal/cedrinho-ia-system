@@ -11,7 +11,7 @@ def validate_model_create(data: dict) -> tuple[bool, str]:
     
     architecture = data['architecture']
     if 'layers' not in architecture or not isinstance(architecture['layers'], list):
-        return False, "A 'arcitecture' must contain a array of 'layers'"
+        return False, "The 'architecture' must contain an array of 'layers'"
     
     if len(architecture['layers']) == 0:
         return False, "The network must have at least one layer"
@@ -19,10 +19,18 @@ def validate_model_create(data: dict) -> tuple[bool, str]:
     for index, layer in enumerate(architecture['layers']):
         if 'type' not in layer:
             return False, f"Layer at index {index} is missing 'type' (e.g., Dense, LSTM)"
+        
         if 'units' not in layer:
             return False, f"Layer at index {index} is missing 'units'"
+        
         if not isinstance(layer['units'], int):
             return False, f"The value of 'units' in layer {index} must be an integer"
+            
+        if index == 0:
+            if 'input_shape' not in layer:
+                return False, "The first layer (index 0) MUST contain an 'input_shape' array"
+            if not isinstance(layer['input_shape'], list):
+                return False, "The 'input_shape' must be a list of integers (e.g., [2] or [10, 5])"
 
     if 'training_config' not in data:
         return False, "Missing 'training_config' block"

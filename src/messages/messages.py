@@ -3,6 +3,7 @@ INVALID_JSON = '{"operation" : "", "data" : { "message" : "Invalid JSON format",
 INVALID_OPERATION = '{"operation" : "{operation}", "data" : { "message" : "Invalid operation", "error" : true } }'
 MISSING_FIELDS = '{"operation" : "{operation}", "data" : { "message" : "Missing required fields", "error" : true } }'
 INTERNAL_ERROR = '{"operation" : "{operation}", "data" : { "message" : "Internal error: {details}", "error" : true } }'
+RAM_ERROR = '{"operation" : "{operation}", "data" : { "message" : "Model not loaded in RAM", "error" : true } }'
 VALIDATION_ERROR = '{"operation" : "{operation}", "data" : { "message" : "Validation Error: {details}", "error" : true } }'
 
 # Respostas de sucesso

@@ -6,6 +6,8 @@ import data_manager
 from port_manager import PortManager
 
 BUFFER_SIZE = 8192
+active_models = {}
+active_sessions = {}
 
 def consoleLog(data, address, verbose=False):
     if verbose:
@@ -13,7 +15,7 @@ def consoleLog(data, address, verbose=False):
 
 def processData(data, address, verbose=False):
     consoleLog(data, address, verbose)
-    return route_manager.run(data, address, verbose)
+    return route_manager.run(data, address, active_models, active_sessions, verbose)
 
 def startServer():
     port = 12345

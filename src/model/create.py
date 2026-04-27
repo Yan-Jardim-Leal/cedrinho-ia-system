@@ -4,6 +4,11 @@ import uuid
 import validator
 import os
 
+import tensorflow as tf 
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, LSTM, Input
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # 0=INFO, 1=WARNING, 2=ERROR, 3=FATAL
 STORAGE_DIR = "../storage/models"
 
 def run(operation_data: dict):
@@ -22,22 +27,40 @@ def run(operation_data: dict):
 
     compilation_success = compile_and_save_ai(operation_data)
     if not compilation_success:
-         return messages.INTERNAL_ERROR.replace('{operation}', 'model_create').replace('{details}', 'Falha ao compilar o modelo matematico')
+         return messages.INTERNAL_ERROR.replace('{operation}', 'model_create').replace('{details}', 'Failed to compile and save the mathematical model')
 
     db_success = data_manager.storeData(operation_data)
     if not db_success:
-        return messages.INTERNAL_ERROR.replace('{operation}', 'model_create').replace('{details}', 'Falha de I/O no banco de dados SQLite')
+        return messages.INTERNAL_ERROR.replace('{operation}', 'model_create').replace('{details}', 'Failed I/O operation on SQLite database')
 
     return messages.MODEL_CREATED.replace('{token}', token)
 
 def compile_and_save_ai(data_payload: dict) -> bool:
     """
-    Função stub. Irá ler o array 'layers', construir a rede e salvar o arquivo .h5.
+    Constrói a rede neural baseada na arquitetura validada e salva em formato .h5.
     """
     print(f"[S] Compilando modelo para {data_payload['file_path']}...")
     try:
-        with open(data_payload['file_path'], 'w') as f:
-            f.write("BINARY_DUMMY_DATA")
+        model = Sequential()
+        layers_config = data_payload['architecture']['layers']
+        
+        for index, layer_data in enumerate(layers_config):
+            layer_type = layer_data['type'].lower()
+            units = layer_data['units']
+            
+            if index == 0:
+                input_shape = tuple(layer_data['input_shape'])
+                model.add(Input(shape=input_shape))
+            
+            if layer_type == 'dense':
+                model.add(Dense(units))
+            elif layer_type == 'lstm':
+                model.add(LSTM(units))
+                    
+        model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
+        
+        model.save(data_payload['file_path'])
         return True
-    except Exception:
+    except Exception as e:
+        print(f"[ERROR] compile_and_save_ai: {e}")
         return False

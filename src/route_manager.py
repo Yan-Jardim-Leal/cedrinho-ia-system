@@ -5,7 +5,7 @@ import model.load as load
 import model.train as train
 import model.process as process
 
-def run(data, address, verbose=False):
+def run(data, address, active_models, active_sessions, verbose=False):
 
     try:
         recieved_json = json.loads(data)
@@ -19,11 +19,11 @@ def run(data, address, verbose=False):
         elif operation == 'model_create':
             return create.run(recieved_json['data'])
         elif operation == 'model_load':
-            return load.run(recieved_json['data'])
+            return load.run(recieved_json['data'], active_models)
         elif operation == 'model_train':
-            return train.run(recieved_json['data'])
+            return train.run(recieved_json['data'], active_models, active_sessions)
         elif operation == 'model_process':
-            return process.run(recieved_json['data'])
+            return process.run(recieved_json['data'], active_models, active_sessions)
         elif operation == 'model_check':
             return check.run(recieved_json['data'])
         else:
