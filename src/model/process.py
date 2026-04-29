@@ -1,26 +1,38 @@
 import numpy as np
-import uuid
-import messages.messages as messages
 
-def run(operation_data, active_models, active_sessions):
-    token = operation_data.get('token')
-    session_id = operation_data.get('session_id')
-    input_data = operation_data.get('input')
+def run(operation_data: dict, active_models: dict, active_sessions: dict) -> dict:
+    token = operation_data['token']
+    session_id = operation_data['session_id']
+    input_data = operation_data['input']
 
     if token not in active_models:
-        return messages.RAM_ERROR.replace('{operation}', 'model_process')
+        return {
+            "message": "Model is not loaded in RAM. Call model_load first.",
+            "error": True,
+            "output": None,
+            "session_id": session_id
+        }
 
-    if not session_id or session_id not in active_sessions:
-        session_id = str(uuid.uuid4())
+    if session_id not in active_sessions:
         active_sessions[session_id] = {"history": [], "state": None}
 
     try:
         model = active_models[token]
-        prediction = model.predict(np.array(input_data))
+        prediction = model.predict(np.array([input_data]), verbose=0)
         
         active_sessions[session_id]["history"].append(input_data)
         
-        res = messages.MODEL_PROCESSED.replace('{output}', str(prediction.tolist()))
-        return res.replace('{session_id}', session_id)
+        return {
+            "message": "Model processed successfully.",
+            "error": False,
+            "output": prediction.tolist()[0],
+            "session_id": session_id
+        }
     except Exception as e:
-        return messages.INTERNAL_ERROR.replace('{operation}', 'model_process').replace('{details}', str(e))
+        print(f"[ERROR] process.run: {e}")
+        return {
+            "message": f"Failed to process inference: {str(e)}",
+            "error": True,
+            "output": None,
+            "session_id": session_id
+        }

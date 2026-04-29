@@ -1,25 +1,39 @@
 import numpy as np
-import uuid
-import messages.messages as messages
 
-def run(operation_data, active_models, active_sessions):
-    token = operation_data.get('token')
-    session_id = operation_data.get('session_id')
-    x_train = np.array(operation_data.get('x'))
-    y_train = np.array(operation_data.get('y'))
-    epochs = operation_data.get('epochs', 1)
+def run(operation_data: dict, active_models: dict, active_sessions: dict) -> dict:
+    token = operation_data['token']
+    session_id = operation_data['session_id']
+    train_data = operation_data['train_data']
 
     if token not in active_models:
-        return messages.RAM_ERROR.replace('{operation}', 'model_train')
+        return {
+            "message": "Model is not loaded in RAM. Call model_load first.",
+            "error": True,
+            "session_id": session_id
+        }
 
-    if not session_id or session_id not in active_sessions:
-        session_id = str(uuid.uuid4())
+    if session_id not in active_sessions:
         active_sessions[session_id] = {"history": [], "state": None}
 
     try:
         model = active_models[token]
-        history = model.fit(x_train, y_train, epochs=epochs, verbose=0)
         
-        return messages.MODEL_TRAINED.replace('{session_id}', session_id)
+        x_train = np.array([step['state'] for step in train_data])
+        y_train = np.array([step['action'] for step in train_data]) 
+        
+        # epochs pode vir do payload ou ser 1 por defeito
+        epochs = operation_data.get('epochs', 1)
+        model.fit(x_train, y_train, epochs=epochs, verbose=0)
+        
+        return {
+            "message": f"Successfully processed and trained on {len(train_data)} experience steps.",
+            "error": False,
+            "session_id": session_id
+        }
     except Exception as e:
-        return messages.INTERNAL_ERROR.replace('{operation}', 'model_train').replace('{details}', str(e))
+        print(f"[ERROR] train.run: {e}")
+        return {
+            "message": f"Internal training error: {str(e)}",
+            "error": True,
+            "session_id": session_id
+        }
