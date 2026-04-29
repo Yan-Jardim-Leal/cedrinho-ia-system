@@ -266,4 +266,4 @@ All neural networks can be summarized by mathematical formulas, ranging from the
 ## License
 This project is licensed under the MIT License.
 
-Creator: **Yan Jardim Leal** Institution: **Polytechnic Institute of Bragança (IPB)**
+Creator: **Yan Jardim Leal** <br>Institution: **Polytechnic Institute of Bragança (IPB)**
