@@ -1,26 +1,21 @@
 import messages.messages as messages
 import data_manager
 import uuid
-import validator
+
 import os
 
 import tensorflow as tf 
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, LSTM, Input
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' # 0=INFO, 1=WARNING, 2=ERROR, 3=FATAL
 STORAGE_DIR = "../storage/models"
 
 def run(operation_data: dict):
-    is_valid, error_msg = validator.validate_model_create(operation_data)
-    if not is_valid:
-        return messages.VALIDATION_ERROR.replace('{operation}', 'model_create').replace('{details}', error_msg)
-
     if not os.path.exists(STORAGE_DIR):
         os.makedirs(STORAGE_DIR)
 
     token = str(uuid.uuid4())
-    file_path = os.path.join(STORAGE_DIR, f"{token}.h5")
+    file_path = os.path.join(STORAGE_DIR, f"{token}.keras")
 
     operation_data['token'] = token
     operation_data['file_path'] = file_path

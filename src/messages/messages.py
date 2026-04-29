@@ -8,7 +8,7 @@ VALIDATION_ERROR = '{"operation" : "{operation}", "data" : { "message" : "Valida
 
 # Respostas de sucesso
 MODEL_CREATED = '{"operation" : "model_create", "data" : { "message" : "Model created successfully", "token" : "{token}", "error" : false } }'
-MODEL_LOADED = '{"operation" : "model_load", "data" : { "message" : "Model loaded successfully", "error" : false } }'
+MODEL_LOADED = '{"operation" : "model_load", "data" : { "message" : "Model is now loading, use check for details", "error" : false } }'
 MODEL_TRAINED = '{"operation" : "model_train", "data" : { "message" : "Model trained successfully", "session_id" : "{session_id}", "error" : false } }'
 MODEL_PROCESSED = '{"operation" : "model_process", "data" : { "message" : "Model processed successfully", "session_id" : "{session_id}", "output" : "{output}", "error" : false } }'
 

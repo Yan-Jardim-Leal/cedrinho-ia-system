@@ -1,28 +1,22 @@
-import numpy as np
-import uuid
+import tensorflow as tf
+import data_manager
 import messages.messages as messages
 
-def run(operation_data, active_models, active_sessions):
+def run(operation_data, active_models):
     token = operation_data.get('token')
-    session_id = operation_data.get('session_id')
-    input_data = operation_data.get('input')
+    if not token:
+        return messages.MISSING_FIELDS.replace('{operation}', 'model_load')
 
-    if token not in active_models:
-        return messages.RAM_ERROR.replace('{operation}', 'model_process')
+    model_entry = data_manager.retrieveData(token)
+    if not model_entry:
+        return messages.INTERNAL_ERROR.replace('{operation}', 'model_load').replace('{details}', 'Token not found')
 
-    if not session_id or session_id not in active_sessions:
-        session_id = str(uuid.uuid4())
-        active_sessions[session_id] = {"history": [], "state": None}
+    file_path = model_entry[2]
 
     try:
-        model = active_models[token]
-        prediction = model.predict(np.array(input_data))
-        
-        active_sessions[session_id]["history"].append(input_data)
-        
-        res = messages.MODEL_PROCESSED.replace('{output}', str(prediction.tolist()))
-        res = res.replace('{session_id}', session_id)
-        
-        return res
+        print(f"[S] Carregando modelo {token} para a RAM...")
+        model = tf.keras.models.load_model(file_path, compile=False)
+        active_models[token] = model
+        return messages.MODEL_LOADED
     except Exception as e:
-        return messages.INTERNAL_ERROR.replace('{operation}', 'model_process').replace('{details}', str(e))
+        return messages.INTERNAL_ERROR.replace('{operation}', 'model_load').replace('{details}', str(e))

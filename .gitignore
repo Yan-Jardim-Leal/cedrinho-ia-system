@@ -1,2 +1,10 @@
 storage/models/
 storage/data.json
+src/data.db
+pycache/
+*.pyc
+.DS_Store
+.idea/
+.vscode/
+.env
+src/__pycache__/

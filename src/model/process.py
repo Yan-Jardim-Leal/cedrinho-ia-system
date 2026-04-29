@@ -21,6 +21,6 @@ def run(operation_data, active_models, active_sessions):
         active_sessions[session_id]["history"].append(input_data)
         
         res = messages.MODEL_PROCESSED.replace('{output}', str(prediction.tolist()))
-        return res.replace('}', f', "session_id": "{session_id}"' + '}')
+        return res.replace('{session_id}', session_id)
     except Exception as e:
         return messages.INTERNAL_ERROR.replace('{operation}', 'model_process').replace('{details}', str(e))
