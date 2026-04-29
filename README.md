@@ -2,7 +2,9 @@
 
 Welcome to the CEDRI Artificial Intelligence Manager! While the tech world often focuses on massive, complex Large Language Models (LLMs), practical applications frequently require lightweight, highly specialized AI models designed for specific tasks. 
 
-Imagine seamlessly creating, managing, and running multiple neural networks on a single machine without the usual headaches. This project is the server-side backbone designed to do exactly that. Our goal is to democratize and standardize AI testing: whether you are experimenting with a new research paper or building a custom tool, we've simplified the process so you can just declare a class and start testing!
+My goal is to facilitade the development of IA models for robotics, sensor data processing, and other real-world applications where efficiency and simplicity are key.
+
+This main project focus is for who wants to use and train robots in real-time, you can also process sensor data on the fly, or simply experiment with AI without the overhead of massive LLMs. It provides a streamlined interface for creating, loading, saving, training, and running inference on custom neural networks built with Keras.
 
 - **Communication Management**: Utilizes the `port-manager` library to efficiently handle asynchronous TCP connections.
 - **Operations Protocol**: Native, out-of-the-box support for creating, loading, saving, training, and running model inference.
@@ -17,7 +19,7 @@ To get started with the CEDRI Artificial Intelligence Manager, follow these step
    ```bash
    git clone https://github.com/Yan-Jardim-Leal/cedrinho-ia-system/tree/main
     ```
-    2. **Navigate to the Project Directory**: 
+2. **Navigate to the Project Directory**: 
     Change your current directory to the project folder:
    ```bash
    cd cedri-ai-manager
