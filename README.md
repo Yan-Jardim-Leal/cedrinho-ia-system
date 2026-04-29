@@ -1,25 +1,23 @@
-# CEDRI - Artificial Intelligence Manager (REST API Edition)
+# CEDRI - Artificial Intelligence Manager (API Gateway Edition)
 
-Welcome to the CEDRI Artificial Intelligence Manager! While the tech world often focuses on massive, complex Large Language Models (LLMs), practical applications frequently require lightweight, highly specialized AI models designed for specific tasks. 
+Welcome to the CEDRI Artificial Intelligence Manager! Developed at the Polytechnic Institute of Bragança (IPB), this project has evolved from a simple socket server into a **AI Orchestrator**. 
 
-My goal is to facilitate the development of AI models for robotics, sensor data processing, and other real-world applications where efficiency and simplicity are key.
+My goal is to provide a single, unified brain for complex robotics projects (like the Cedrinho robot). It acts as a smart **API Gateway**, capable of managing and routing multiple types of Artificial Intelligence models through a single HTTP interface.
 
-This project focuses on users who want to use and train robots in real-time, process sensor data on the fly, or simply experiment with AI without the overhead of massive LLMs. It provides a streamlined **REST API** for creating, loading, saving, training, and running inference on custom neural networks built with TensorFlow/Keras.
+Whether you need a lightweight Reinforcement Learning model to help a robot make strategic positioning decisions, or a massive Large Language Model (LLM) to power an interactive chatbot, this system orchestrates it all transparently.
 
-There is not many projects out there that offer training at the same time as inference on the same model, and this is one of the main features of this project. You can create a model, load it into RAM, and then send data for both inference and training in real-time, all through simple requests.
-
-- **Modern REST Architecture**: Powered by **FastAPI** and **Uvicorn**, providing highly scalable, asynchronous HTTP endpoints.
-- **Auto-Generated Documentation**: Explore and test the API instantly via the built-in interactive Swagger UI.
-- **Strict Data Validation**: Features an integrated validation module using **Pydantic V2** that ensures your neural network configurations and hyperparameters are perfectly structured *before* processing begins.
-- **Aggressive Memory Management**: Secure model unloading operations that explicitly trigger the Python Garbage Collector to free up RAM instantly.
-- **Hybrid Persistence**: Smart storage that keeps metadata in a structured database (SQLite) while handling the physical serialization of models (`.keras` format) within the file system.
+- **Unified API Gateway**: Acts as the central hub. It handles native TensorFlow/Keras models directly and acts as a seamless proxy for heavy LLMs (via external engines like Ollama). The robot only ever talks to one system.
+- **Modern REST Architecture**: Powered by **FastAPI** and **Uvicorn**, providing highly scalable HTTP endpoints.
+- **Auto-Generated Documentation**: Explore and test the API instantly via the built-in interactive Swagger UI (`/docs`).
+- **Strict Data Validation**: Features an integrated validation module using **Pydantic V2** that ensures your neural network configurations and prompts are perfectly structured before processing begins.
+- **Strategic Decision Making**: Optimized for "Soft Real-Time" operations, perfect for periodic strategic routing, environment analysis, and conversational AI.
 
 ---
 
 # 1. Install Guide
 To get started with the CEDRI Artificial Intelligence Manager, follow these steps:
 
-1. **Clone the Repository**: Start by cloning the project repository to your local machine using the following command:
+1. **Clone the Repository**:
 ```bash
 git clone https://github.com/Yan-Jardim-Leal/cedrinho-ia-system.git
 cd cedrinho-ia-system/src
@@ -35,15 +33,17 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 12345 --reload
 ```
    
-4. **Access the Interactive API**: You don't need Telnet or a custom client anymore! Open your browser and navigate to:
+4. **Access the Interactive API**: Open your browser and navigate to:
    **`http://localhost:12345/docs`**
-   Here you will find the interactive Swagger UI where you can visually test all endpoints, see schemas, and send JSON payloads.
+   Here you will find the interactive Swagger UI where you can visually test all endpoints and send JSON payloads.
 
 ---
 
-# 2. How to Create a Model
+# 2. How to Create a Native Model (TensorFlow/Keras)
 
-This documentation provides a step-by-step guide on how to bring a new AI model to life. You simply send a `POST` request with a JSON payload to the `/api/models/create` endpoint.
+This documentation provides a step-by-step guide on how to bring a new native AI model to life. You simply send a `POST` request with a JSON payload to the `/api/models/create` endpoint.
+
+*Note: For LLMs, the creation process is handled by the external engine (e.g., Ollama), and this API will serve as the communication proxy.*
 
 **Endpoint:** `POST /api/models/create`
 
@@ -57,7 +57,7 @@ This documentation provides a step-by-step guide on how to bring a new AI model 
 | `layers` | `architecture` | **Yes** | `Array` | Sequential list containing the dictionaries for each layer. Must have a size > 0. |
 | `type` | `layers[n]` | **Yes** | `String` | The mathematical type of the layer. Supported options: `"Dense"`, `"LSTM"`. |
 | `units` | `layers[n]` | **Yes** | `Integer` | Number of neurons in the layer. Must be a strictly positive integer (> 0). |
-| `input_shape` | `layers[0]` | **Yes** | `Array` | Defines the dimension of the input tensor (Ex: `[10]` or `[10, 1]`). **Mandatory only in the index 0 layer.** If sent in other layers, it will cause a validation error. |
+| `input_shape` | `layers[0]` | **Yes** | `Array` | Defines the dimension of the input tensor (Ex: `[10]` or `[10, 1]`). **Mandatory only in the index 0 layer.** |
 | `activation` | `layers[n]` | Optional | `String` | Non-linear activation function of the layer. Common options: `"relu"`, `"tanh"`, `"linear"`, `"sigmoid"`. |
 | `training_config` | Root | Optional | `Object` | Configuration block for the compilation engine. |
 | `optimizer` | `training_config` | Optional | `String` | Gradient descent algorithm. Example: `"adam"`, `"sgd"`, `"rmsprop"`. |
@@ -70,8 +70,8 @@ This documentation provides a step-by-step guide on how to bring a new AI model 
 | `epsilon_decay` | `rl_params` | Optional | `Float` | Multiplicative factor to reduce epsilon over time (Decay). Ex: `0.995`. |
 | `buffer_size` | `rl_params` | Optional | `Integer` | Maximum size of the Replay Buffer to store experiences. Ex: `10000`. |
 
-## 2.2. JSON Example: The Most Complex Possible
-This example demonstrates a hybrid network (Dense + LSTM) for robotics, with detailed training configurations and RL parameters.
+## 2.2. JSON Example: Hybrid Reinforcement Network
+This example demonstrates a hybrid network (Dense + LSTM) for robotic strategic positioning.
 
 ```json
 {
@@ -121,7 +121,7 @@ This example demonstrates a hybrid network (Dense + LSTM) for robotics, with det
 
 # 3. How to Load and Check a Model
 
-When you create a model, you receive a **token** (UUID). This token is required for all subsequent operations. Before processing data, the model must be loaded into the system's RAM.
+When you create a native model, you receive a **token** (UUID). Before processing data, the model must be loaded into the system's RAM.
 
 ## 3.1. Requesting a 'model_load'
 **Endpoint:** `POST /api/models/load`
@@ -129,14 +129,6 @@ When you create a model, you receive a **token** (UUID). This token is required 
 ```json
 {
   "token": "c5bbb6ce-c023-4a36-a8bc-656df223ea42"
-}
-```
-
-### Success Response
-```json
-{
-  "message": "Model loaded into RAM successfully.",
-  "error": false
 }
 ```
 
@@ -210,15 +202,6 @@ Provides the network with an array of experiences or labeled data to adjust its 
 }
 ```
 
-### Success Response
-```json
-{
-  "message": "Successfully processed and trained on 1 experience steps.",
-  "error": false,
-  "session_id": "session-XYZ-123"
-}
-```
-
 ---
 
 # 5. Advanced Operations
@@ -239,7 +222,7 @@ Dynamically update hyperparameters (like learning rate) on the fly without recre
 
 ## 5.2. Requesting a 'model_unload'
 **Endpoint:** `POST /api/models/unload`
-Neural networks consume significant RAM. If you are not using a model, you should unload it. Our unload system aggressively forces Python's Garbage Collector to free the RAM/VRAM allocations immediately.
+Neural networks consume significant RAM. If you are not using a model, you should unload it. Our unload system explicitly triggers Python's Garbage Collector to free the RAM allocations safely.
 
 ```json
 {
@@ -247,21 +230,10 @@ Neural networks consume significant RAM. If you are not using a model, you shoul
 }
 ```
 
-### Success Response
-```json
-{
-  "message": "Model aggressively unloaded. :)",
-  "error": false
-}
-```
-
 ---
 
 ## Important Facts:
-**Security Warning:** Never expose this project directly to the public internet on an open system port. In a production environment, always deploy this FastAPI application behind a secure Reverse Proxy (such as Nginx or Traefik) and utilize HTTPS (TLS/SSL) certificates to encrypt the JSON payloads (like the IPB campus network).
-
-## Fun facts: How they do it?
-All neural networks can be summarized by mathematical formulas, ranging from the simplest to the most complex. With this in mind, the job of programming neural networks fundamentally comes down to translating these mathematical formulas into code, such as summations, divisions, and multiplications. This project uses a library called TensorFlow as its main engine. They have already done the overwhelming majority of the heavy lifting by translating the most important and market-standard mathematical formulas into optimized C++ backend code for your project.
+**Intranet & Security:** This system is designed as an internal microservice for the IPB campus network. It utilizes stateful RAM management for laboratory ease-of-use. If exposing this API to public networks or deploying it across horizontally scaled clusters, ensure it is placed behind a secure Reverse Proxy (Nginx/Traefik) with proper load balancing rules (Sticky Sessions) and HTTPS (TLS/SSL) encryption.
 
 ## License
 This project is licensed under the MIT License.
