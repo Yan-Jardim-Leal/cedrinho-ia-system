@@ -250,7 +250,7 @@ Neural networks consume significant RAM. If you are not using a model, you shoul
 ### Success Response
 ```json
 {
-  "message": "Model aggressively unloaded and RAM explicitly freed.",
+  "message": "Model aggressively unloaded. :)",
   "error": false
 }
 ```

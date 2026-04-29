@@ -9,7 +9,7 @@ def run(operation_data: dict, active_models: dict) -> dict:
         gc.collect()
         
         return {
-            "message": "Model aggressively unloaded and RAM explicitly freed.", 
+            "message": "Model unloaded successfully.", 
             "error": False
         }
         
