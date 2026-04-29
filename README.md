@@ -362,7 +362,7 @@ When processing a model, we can store a session, this session serves to maintain
 
 # 5. Important Operations
 
-Beyond the basic operations of creating, loading, processing, and training models, there are some additional operations that can be very useful for managing your AI models effectively. These operations allow you to update model hyperparameters on the fly, unload models from memory when not in use, and even import/export models in different formats.
+Beyond the basic operations of creating, loading, processing, and training models, there are some additional operations that can be very useful for managing your AI models effectively. These operations allow you to update model hyperparameters on the fly and unload models from memory when not in use.
 
 ## 5.1. Requesting a 'model_update'
 This operation allows you to update the hyperparameters of a model that is currently loaded in memory. This is particularly useful for reinforcement learning models, where you might want to adjust parameters like the learning rate or exploration rate on the fly without having to recreate and retrain the model from scratch.
