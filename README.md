@@ -1,16 +1,21 @@
-# CEDRI - Artificial Intelligence Manager (API Gateway Edition)
+# CEDRI - AI Gateway for the Cedrinho Robot
 
-Welcome to the CEDRI Artificial Intelligence Manager! Developed at the Polytechnic Institute of Bragança (IPB), this project has evolved from a simple socket server into a **AI Orchestrator**. 
+Welcome to the CEDRI AI Gateway! Developed at the Polytechnic Institute of Bragança (IPB), this project is a centralized server designed to host and manage the artificial intelligence models for the Cedrinho robot.
 
-My goal is to provide a single, unified brain for complex robotics projects (like the Cedrinho robot). It acts as a smart **API Gateway**, capable of managing and routing multiple types of Artificial Intelligence models through a single HTTP interface.
+### Why a Gateway?
+To simplify the robot's hardware requirements, we decoupled its "Body" (sensors and motors) from its "Brain" (AI processing). CEDRI provides a single server interface. Whether the robot needs to calculate a route using TensorFlow or interact via an LLM, it makes a standard HTTP request to this system.
 
-Whether you need a lightweight Reinforcement Learning model to help a robot make strategic positioning decisions, or a massive Large Language Model (LLM) to power an interactive chatbot, this system orchestrates it all transparently.
+- **Single Endpoint**: Provides one IP and one port for the robot. It processes native Keras models and acts as a proxy for LLMs (like Ollama), preventing the need to update the robot's code when the AI backend changes.
+- **Stateful RPC Server**: Models are kept loaded in RAM. This stateful approach bypasses disk I/O latency for frequent requests, which fits our laboratory environment perfectly.
+- **Data Validation**: Uses Pydantic V2 to validate JSON requests and performs real-time Tensor Shape Verification to catch dimension mismatches before they crash the Keras engine.
+- **Metadata Tracking**: Uses a local SQLite database to store and track the lifecycle and history of each model.
 
-- **Unified API Gateway**: Acts as the central hub. It handles native TensorFlow/Keras models directly and acts as a seamless proxy for heavy LLMs (via external engines like Ollama). The robot only ever talks to one system.
-- **Modern REST Architecture**: Powered by **FastAPI** and **Uvicorn**, providing highly scalable HTTP endpoints.
-- **Auto-Generated Documentation**: Explore and test the API instantly via the built-in interactive Swagger UI (`/docs`).
-- **Strict Data Validation**: Features an integrated validation module using **Pydantic V2** that ensures your neural network configurations and prompts are perfectly structured before processing begins.
-- **Strategic Decision Making**: Optimized for "Soft Real-Time" operations, perfect for periodic strategic routing, environment analysis, and conversational AI.
+## Design Philosophy: Stateful RPC
+CEDRI was deliberately designed as a stateful server rather than a stateless REST API. For our specific research environment and the Cedrinho robot's workflow, keeping the model loaded in the server's memory is practical and avoids constant reloading overhead.
+
+For Reinforcement Learning tasks, the server maintains active sessions for batch training. To protect against RAM volatility or power failures, it implements a local file backup system (`backup_manager`), saving the experiences (Replay Buffers) safely to the disk.
+
+By centralizing the processing, we can monitor, debug, and update the robot's AI logic directly on the server without touching the edge hardware.
 
 ---
 
@@ -222,7 +227,7 @@ Dynamically update hyperparameters (like learning rate) on the fly without recre
 
 ## 5.2. Requesting a 'model_unload'
 **Endpoint:** `POST /api/models/unload`
-Neural networks consume significant RAM. If you are not using a model, you should unload it. Our unload system explicitly triggers Python's Garbage Collector to free the RAM allocations safely.
+Neural networks consume significant RAM. If you are not using a model, you should unload it.
 
 ```json
 {
@@ -233,7 +238,7 @@ Neural networks consume significant RAM. If you are not using a model, you shoul
 ---
 
 ## Important Facts:
-**Intranet & Security:** This system is designed as an internal microservice for the IPB campus network. It utilizes stateful RAM management for laboratory ease-of-use. If exposing this API to public networks or deploying it across horizontally scaled clusters, ensure it is placed behind a secure Reverse Proxy (Nginx/Traefik) with proper load balancing rules (Sticky Sessions) and HTTPS (TLS/SSL) encryption.
+**Intranet & Security:** This is a laboratory-grade Orchestrator. For production deployments or when exposing the API beyond the local IPB intranet, the FastAPI application must be placed behind a secure Reverse Proxy (such as Nginx or Traefik) configured with HTTPS (TLS/SSL) encryption and proper authentication layers.
 
 ## License
 This project is licensed under the MIT License.

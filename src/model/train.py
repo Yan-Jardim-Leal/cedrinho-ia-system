@@ -1,4 +1,5 @@
 import numpy as np
+import backup_manager
 
 def run(operation_data: dict, active_models: dict, active_sessions: dict) -> dict:
     token = operation_data['token']
@@ -21,12 +22,13 @@ def run(operation_data: dict, active_models: dict, active_sessions: dict) -> dic
         x_train = np.array([step['state'] for step in train_data])
         y_train = np.array([step['action'] for step in train_data]) 
         
-        # epochs pode vir do payload ou ser 1 por defeito
         epochs = operation_data.get('epochs', 1)
         model.fit(x_train, y_train, epochs=epochs, verbose=0)
         
+        backup_manager.save_training_backup(session_id, train_data)
+
         return {
-            "message": f"Successfully processed and trained on {len(train_data)} experience steps.",
+            "message": f"Successfully processed and trained on {len(train_data)} experience steps. Backup created.",
             "error": False,
             "session_id": session_id
         }
