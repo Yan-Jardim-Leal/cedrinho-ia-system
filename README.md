@@ -3,15 +3,10 @@
 Welcome to the CEDRI AI Gateway! Developed at the Polytechnic Institute of Bragança (IPB), this project is a centralized server designed to host and manage the artificial intelligence models for the Cedrinho robot.
 
 ### Why a Gateway?
-To simplify the robot's hardware requirements, we decoupled its "Body" (sensors and motors) from its "Brain" (AI processing). CEDRI provides a single server interface. Whether the robot needs to calculate a route using TensorFlow or interact via an LLM, it makes a standard HTTP request to this system.
+To simplify the robot's hardware requirements. CEDRI provides a single server interface. Whether the robot needs to calculate a route using TensorFlow or interact via an LLM, it makes a standard HTTP request to this system.
 
-- **Single Endpoint**: Provides one IP and one port for the robot. It processes native Keras models and acts as a proxy for LLMs (like Ollama), preventing the need to update the robot's code when the AI backend changes.
-- **Stateful RPC Server**: Models are kept loaded in RAM. This stateful approach bypasses disk I/O latency for frequent requests, which fits our laboratory environment perfectly.
-- **Data Validation**: Uses Pydantic V2 to validate JSON requests and performs real-time Tensor Shape Verification to catch dimension mismatches before they crash the Keras engine.
-- **Metadata Tracking**: Uses a local SQLite database to store and track the lifecycle and history of each model.
-
-## Design Philosophy: Stateful RPC
-CEDRI was deliberately designed as a stateful server rather than a stateless REST API. For our specific research environment and the Cedrinho robot's workflow, keeping the model loaded in the server's memory is practical and avoids constant reloading overhead.
+## Design:
+The program keeps the model loaded in the server's memory, it's practical and avoids constant reloading overhead. (you can unload it also)
 
 For Reinforcement Learning tasks, the server maintains active sessions for batch training. To protect against RAM volatility or power failures, it implements a local file backup system (`backup_manager`), saving the experiences (Replay Buffers) safely to the disk.
 
@@ -35,11 +30,11 @@ pip install -r requirements.txt
 
 3. **Run the Server**: Start the ASGI server using Uvicorn:
 ```bash
-uvicorn main:app --host 0.0.0.0 --port 12345 --reload
+python main.py --host 0.0.0.0 --port 48050 --reload
 ```
    
 4. **Access the Interactive API**: Open your browser and navigate to:
-   **`http://localhost:12345/docs`**
+   **`http://localhost:4850/docs`**
    Here you will find the interactive Swagger UI where you can visually test all endpoints and send JSON payloads.
 
 ---
@@ -238,7 +233,7 @@ Neural networks consume significant RAM. If you are not using a model, you shoul
 ---
 
 ## Important Facts:
-**Intranet & Security:** This is a laboratory-grade Orchestrator. For production deployments or when exposing the API beyond the local IPB intranet, the FastAPI application must be placed behind a secure Reverse Proxy (such as Nginx or Traefik) configured with HTTPS (TLS/SSL) encryption and proper authentication layers.
+**Intranet & Security:** This is a laboratory program. For production deployments or when exposing the API beyond the local IPB intranet, the FastAPI application must be placed behind a secure https & create a wrapper for sessions, because the program do not have security.
 
 ## License
 This project is licensed under the MIT License.

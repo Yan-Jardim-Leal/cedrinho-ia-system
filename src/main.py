@@ -1,3 +1,5 @@
+import argparse
+import uvicorn
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 from typing import Dict, Any, Optional, List
@@ -18,12 +20,22 @@ from model import check, load, create, train, process
 active_models = {}
 active_sessions = {}
 
+config = {
+    "verbose": False,
+    "port": 48050
+}
+
 async def lifespan(app: FastAPI):
     """Chamada inicial, inicia o servidor e os subsistemas necessários."""
-    print("[S] starting...")
+    if config["verbose"]:
+        print(f"[S] starting IA Manager with Verbose Mode ON...")
+        print(f"[S] Configurações de Rede: PORT={config['port']}")
+    else:
+        print("[S] starting IA Manager...")
+        
     data_manager.run()
     yield
-    print("[S] stopping...")
+    print("[S] stopping IA Manager...")
 
 app = FastAPI(
     title="CEDRI IA Manager",
@@ -75,3 +87,22 @@ async def unload_model_route(payload: ModelUnloadValidator):
     """Unload a model from active memory (RAM) using the provided token. Expects a JSON payload with the model token."""
     result = load.run(payload.model_dump(), active_models)
     return result
+
+# ==========================================
+#       INICIALIZAÇÃO
+# ==========================================
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="CEDRI IA Manager Startup Script")
+    
+    parser.add_argument("-v", "--verbose", action="store_true", help="Activate detailed loggings.")
+    parser.add_argument("--port", type=int, default=48050, help="Porta do servidor da IA (padrão: 48050)")
+    
+    args = parser.parse_args()
+    
+    config["verbose"] = args.verbose
+    config["port"] = args.port
+    
+    print(f"[S] Iniciando o servidor Uvicorn na porta {args.port}...")
+    
+    uvicorn.run(app, host="0.0.0.0", port=args.port)
